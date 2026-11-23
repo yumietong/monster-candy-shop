@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>怪獸糖果店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a bright monster candy shop; one big stage per question, thumb-sized buttons for P1 pupils */
+:root{
+  --plum:#3b1f4a; --grape:#7a5cff; --pink:#ff4f8b; --mint:#14b8a6; --sun:#ffc531; --sky:#38bdf8;
+  --bg:#f3efff; --card:#ffffff; --line:#d9d0f5;
+  --display:"Noto Sans TC","PingFang HK","Microsoft JhengHei",system-ui,sans-serif;
+  --c:clamp(20px,6.4vw,32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--plum);font-family:var(--display);font-weight:500}
+body{background:radial-gradient(circle at 10% 0,#ffe3f0 0,transparent 40%),radial-gradient(circle at 100% 20%,#d9f7f2 0,transparent 35%),var(--bg)}
+#app{max-width:760px;margin:0 auto;padding:16px}
+[hidden]{display:none!important}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.hero{display:flex;gap:14px;align-items:center}
+.monster{animation:bob 2.4s ease-in-out infinite}
+.kicker{margin:0;font-size:14px;color:var(--grape);font-weight:700}
+h1{margin:0;font-size:clamp(36px,10vw,56px);font-weight:900;line-height:1.05;letter-spacing:.02em;color:var(--plum)}
+.sub{margin:4px 0 0;font-size:18px}
+.motto{margin:16px 0;padding:12px 16px;background:var(--sun);border-radius:16px;font-weight:900;font-size:clamp(18px,5vw,24px);text-align:center;box-shadow:0 5px 0 #d99a00}
+.sect{font-size:20px;margin:20px 0 10px}
+.menu{display:grid;gap:12px}
+.gcard{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;text-align:left;background:var(--card);border:3px solid var(--line);border-radius:20px;padding:12px 14px;box-shadow:0 5px 0 var(--line);transition:transform .12s}
+.gcard:hover{transform:translateY(-2px)}
+.gcard:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
+.gicon{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:34px;font-weight:900;color:#fff}
+.gname{font-size:20px;font-weight:900}
+.gdesc{font-size:14px;opacity:.8;margin-top:2px}
+.gstars{font-size:22px;letter-spacing:2px;color:var(--sun);white-space:nowrap}
+.gstars .off{color:#e3dcf7}
+.totalstars{text-align:center;font-weight:700;margin:18px 0}
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gtitle{font-weight:900;font-size:18px;flex:1;min-width:120px}
+.ghost{background:#fff;border:3px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700;font-size:16px}
+.dots{display:flex;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;background:#e3dcf7}
+.dot.now{background:var(--grape);transform:scale(1.25)}
+.dot.ok{background:var(--mint)}
+.dot.no{background:var(--pink)}
+.prompt{font-size:clamp(20px,5.4vw,26px);font-weight:900;margin:16px 0 8px;line-height:1.35}
+.stage{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:16px;min-height:220px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.order{display:flex;align-items:center;gap:10px;align-self:stretch;background:#fff4c9;border-radius:16px;padding:8px 12px;font-weight:700}
+.order .bubble{flex:1}
+.face{font-size:34px}
+.bigno{font-size:clamp(56px,18vw,92px);font-weight:900;color:var(--pink);line-height:1}
+.read{font-size:20px;font-weight:700;color:var(--grape)}
+/* candies */
+.candy{width:var(--c);height:var(--c);border-radius:28%;background:var(--k,#ff4f8b);box-shadow:inset -3px -3px 0 rgba(0,0,0,.14),inset 3px 3px 0 rgba(255,255,255,.4);flex:none}
+.bar{display:flex;gap:2px;padding:3px;background:#fff;border:3px solid var(--k,#ff4f8b);border-radius:12px}
+.bar .candy{box-shadow:inset -2px -2px 0 rgba(0,0,0,.14),inset 2px 2px 0 rgba(255,255,255,.4)}
+.bars{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.units{display:flex;gap:6px;flex-wrap:wrap}
+.pic{display:flex;flex-direction:column;gap:10px;align-items:flex-start;width:100%}
+.picrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%}
+.picrow .lbl{font-weight:900;font-size:14px;color:var(--grape);width:100%}
+.tray{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px;background:#f7f4ff;border:3px dashed var(--line);border-radius:18px;align-self:stretch;min-height:70px}
+.tray .candy{border:0;padding:0;cursor:pointer;transition:transform .12s}
+.tray .candy:hover{transform:scale(1.12) rotate(-6deg)}
+.row10{align-self:stretch;display:flex;flex-direction:column;gap:6px}
+.slotrow{display:flex;gap:2px;padding:3px;border:3px dashed var(--line);border-radius:12px;min-height:calc(var(--c) + 12px);align-self:flex-start;flex-wrap:nowrap}
+.slotrow.done{border-style:solid;border-color:var(--mint);background:#e8fbf8}
+.slotrow .candy{cursor:pointer}
+.slotrow.done .candy{cursor:default}
+.slotrow .cnt{align-self:center;font-weight:900;color:var(--mint);margin-left:6px;white-space:nowrap}
+/* answer buttons */
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;align-self:stretch}
+.choice{background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px 8px;font-size:30px;font-weight:900;box-shadow:0 5px 0 var(--line);min-height:64px}
+.choice:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
+.choice.small{font-size:18px}
+.choice.right{background:#c9f7ee;border-color:var(--mint);box-shadow:0 5px 0 var(--mint)}
+.choice.wrong{background:#ffdbe7;border-color:var(--pink);box-shadow:0 5px 0 var(--pink);animation:shake .35s}
+.bagwrap{display:flex;flex-direction:column;gap:8px;align-items:center;padding:12px 10px;min-height:120px}
+.bagwrap .tag{font-size:22px;font-weight:900}
+.bagwrap .bars{align-items:center}
+/* keypad */
+.slot{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:22px;font-weight:900}
+.field{min-width:92px;height:70px;border:4px solid var(--grape);border-radius:16px;display:grid;place-items:center;font-size:44px;font-weight:900;background:#fff}
+.field.on{box-shadow:0 0 0 5px #d9d0ff}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(100%,320px)}
+.key{background:#fff;border:3px solid var(--line);border-radius:14px;font-size:26px;font-weight:900;padding:10px 0;box-shadow:0 4px 0 var(--line)}
+.key:active{transform:translateY(2px);box-shadow:0 2px 0 var(--line)}
+.key.go{background:var(--mint);border-color:#0e8f81;color:#fff;box-shadow:0 4px 0 #0e8f81}
+.key.del{background:#fff4c9}
+.feedback{min-height:56px;margin:12px 0 4px;font-size:20px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.feedback.good{color:#0b8a7b}
+.feedback.bad{color:#d62a65}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.big{background:var(--pink);color:#fff;border:0;border-radius:18px;padding:14px 28px;font-size:22px;font-weight:900;box-shadow:0 6px 0 #c22d68}
+.big:active{transform:translateY(3px);box-shadow:0 3px 0 #c22d68}
+.big.mint{background:var(--mint);box-shadow:0 6px 0 #0e8f81}
+.combo{display:inline-block;background:var(--sun);border-radius:999px;padding:2px 12px;color:var(--plum);animation:pop .4s}
+.endcard{background:var(--card);border:3px solid var(--line);border-radius:28px;padding:24px 16px;text-align:center;margin-top:24px}
+.endstars{font-size:64px;letter-spacing:6px;color:var(--sun)}
+.endstars .off{color:#e3dcf7}
+.endcard h2{font-size:30px;margin:8px 0}
+.fly{position:fixed;pointer-events:none;font-size:30px;z-index:9;animation:fly 1s ease-out forwards}
+@keyframes bob{50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes fly{to{transform:translate(var(--dx),-140px) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:420px){.gcard{grid-template-columns:52px 1fr}.gicon{width:52px;height:52px;font-size:28px}.gstars{grid-column:2}}
+/* 第三個遊戲：簡報式糖果袋 */
+.pill{background:var(--pink);color:#fff;border-radius:999px;padding:4px 30px 8px;font-size:clamp(40px,12vw,56px);box-shadow:0 5px 0 #c22d68}
+.choices.bags{grid-template-columns:repeat(3,1fr);gap:8px;align-items:end}
+.rodbag{position:relative;padding:0 4px 10px;overflow:hidden;background:#fbf1e8;border-color:#f0dccb;box-shadow:0 5px 0 #f0dccb;font-size:inherit;gap:6px;justify-content:flex-end;min-height:200px}
+.rodbag .stripe{align-self:stretch;height:12px;background:repeating-linear-gradient(90deg,#ff6fa5 0 8px,#fff 8px 16px)}
+.rodbag .tag{font-size:16px;background:#e5dcfa;color:var(--grape);border-radius:999px;padding:0 14px}
+.rodbag.right{background:#e6f6d6;border-color:#7cc455;box-shadow:0 5px 0 #7cc455}
+.rodbag.right .tag{background:var(--mint);color:#fff}
+.rodbag.wrong{background:#ffe3ec}
+.rodpic{--q:clamp(9px,2.8vw,16px);display:flex;align-items:flex-end;justify-content:center;gap:calc(var(--q)*.3)}
+.rod{display:flex;flex-direction:column;gap:0}
+.rod.units{margin-left:calc(var(--q)*.6)}
+.cube{width:var(--q);height:var(--q);background:#eef1b4;border:1.5px solid #b9bd6d;box-sizing:border-box}
+.rodbag.right .cube{background:#a7d83a;border-color:#4d7a12}
+/* 成績與老師頁 */
+.namebox{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.namebox label{font-weight:700}
+input[type=text],textarea{font:inherit;font-size:18px;padding:12px 14px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--plum);width:100%}
+input[type=text]:focus-visible,textarea:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.report{margin-top:20px}
+.hint{font-size:15px;margin:6px 0;opacity:.85}
+.teacherlink{text-align:center;margin:24px 0 8px;font-size:14px}
+.teacherlink a{color:var(--grape)}
+.tablewrap{overflow-x:auto;margin:12px 0}
+.ttable{border-collapse:collapse;min-width:640px;width:100%;background:#fff}
+.ttable th,.ttable td{border:2px solid var(--line);padding:8px 10px;text-align:center;font-weight:700;font-size:15px}
+.ttable th{background:#efe9ff}
+.ttable td.nm{text-align:left}
+.ttable .good{background:#c9f7ee}.ttable .mid{background:#fff0b8}.ttable .low{background:#ffdbe7}.ttable .none{color:#9a90b8}
+.ttable .avg td{background:#f7f4ff}
+.wrongbox{background:#fff;border:3px solid var(--line);border-radius:16px;padding:6px 16px 10px}
+.wrongbox h3{margin:10px 0 4px}
+.wrongbox p{margin:4px 0}
+a.ghost{text-decoration:none;color:inherit}
+/* 成績卡、核對 */
+.warn{color:#d62a65;font-weight:900;min-height:1.2em;margin:6px 0}
+.scorecard{background:#fff8dc;border:4px dashed var(--sun);border-radius:20px;padding:14px;margin:14px auto;max-width:360px}
+.cardrow{font-size:20px;font-weight:900;margin:4px 0}
+.cardrow.big2{font-size:24px;color:var(--grape)}
+.cardlabel{margin-top:10px;font-weight:700}
+.code{font-size:54px;font-weight:900;letter-spacing:.15em;color:var(--pink);font-variant-numeric:tabular-nums}
+.checkbox{margin-top:28px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:6px 16px 14px}
+.checkgrid{display:grid;grid-template-columns:1fr;gap:6px}
+.checkgrid label{font-weight:700;margin-top:6px}
+select{font:inherit;font-size:18px;padding:12px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--plum);width:100%}
+.checkres{font-weight:900;font-size:18px;min-height:1.4em}
+.checkres.good{color:#0b8a7b}.checkres.low{color:#d62a65}
+.gline{display:flex;justify-content:space-between;gap:8px;font-weight:700;margin:3px 0;text-align:left}
+.gs{color:var(--sun);letter-spacing:2px;white-space:nowrap}.gs .off{color:#e3dcf7}
+.hit{background:#f7f4ff;border-radius:12px;padding:8px 12px;margin:8px 0;color:var(--plum)}
+.more{margin-top:12px}.more summary{cursor:pointer;font-weight:700}
+.checkbox .actions{margin:18px 0 14px}
+/* 排糖果：直條 */
+.rods{align-self:stretch;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:flex-end}
+.rodwrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.slotcol{display:flex;flex-direction:column-reverse;gap:2px;padding:3px;border:3px dashed var(--line);border-radius:12px;min-height:calc(10*(var(--c) + 2px) + 8px);width:calc(var(--c) + 12px);align-items:center}
+.slotcol.done{border-style:solid;border-color:var(--mint);background:#e8fbf8}
+.slotcol .candy{cursor:pointer}
+.slotcol.done .candy{cursor:default}
+.rodwrap .cnt{font-weight:900;color:var(--mint);min-height:1.3em;font-size:14px;white-space:nowrap}
+.grp{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.slot{gap:10px 16px}
+.slot.multi .field{min-width:64px;height:58px;font-size:36px}
+.rods.compact{--c:14px;gap:8px}
+.rods.compact .rodwrap .cnt{font-size:12px}
+
+</style>
+</head>
+<body>
+<main id="app">
+  <section id="home" class="screen">
+    <header class="hero">
+      <div class="monster" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="120" height="120">
+          <ellipse cx="60" cy="108" rx="34" ry="7" fill="#000" opacity=".12"/>
+          <path d="M60 14c-26 0-40 20-40 46 0 26 14 46 40 46s40-20 40-46c0-26-14-46-40-46z" fill="#7a5cff"/>
+          <path d="M34 22l-8-14 18 8zM86 22l8-14-18 8z" fill="#7a5cff"/>
+          <circle cx="45" cy="52" r="13" fill="#fff"/><circle cx="75" cy="52" r="13" fill="#fff"/>
+          <circle cx="47" cy="54" r="6" fill="#3b1f4a"/><circle cx="73" cy="54" r="6" fill="#3b1f4a"/>
+          <path d="M40 80q20 20 40 0z" fill="#3b1f4a"/>
+          <rect x="52" y="80" width="6" height="8" fill="#fff"/><rect x="64" y="80" width="6" height="8" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <p class="kicker">小一數學 · 認識 100 以內的數</p>
+        <h1>怪獸糖果店</h1>
+        <p class="sub">今日學習：認識 21–50 的數</p>
+      </div>
+    </header>
+    <p class="motto">每 10 粒排一條，先數條再數粒！</p>
+    <div class="namebox">
+      <label for="pname">你的名字（例如：1A 12 陳小明）</label>
+      <input id="pname" type="text" maxlength="20" autocomplete="off" placeholder="先寫名字，再玩遊戲">
+    </div>
+    <p id="nameWarn" class="warn" role="alert"></p>
+    <h2 class="sect">揀一個遊戲玩</h2>
+    <div id="menu" class="menu"></div>
+    <p class="totalstars" id="totalstars"></p>
+    <section class="report">
+      <h2 class="sect">我的成績卡</h2>
+      <div id="homecard" class="scorecard"></div>
+      <p class="hint">玩完想玩的遊戲後，把上面的過關碼抄在工作紙上，只需要寫一次。</p>
+    </section>
+    <p class="teacherlink"><a href="#teacher">老師專用</a></p>
+  </section>
+
+  <section id="play" class="screen" hidden>
+    <div class="topbar">
+      <button id="back" class="ghost" type="button">← 返回</button>
+      <div id="gtitle" class="gtitle"></div>
+      <div id="dots" class="dots" aria-label="進度"></div>
+    </div>
+    <p id="prompt" class="prompt"></p>
+    <div id="stage" class="stage"></div>
+    <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="actions"><button id="next" class="big" type="button" hidden>下一題 →</button></div>
+  </section>
+
+  <section id="end" class="screen" hidden>
+    <div class="endcard">
+      <div id="endstars" class="endstars"></div>
+      <h2 id="endtitle"></h2>
+      <p id="endmsg"></p>
+      <p class="hint">全部玩完後，回到主頁抄下過關碼，寫在工作紙上就可以了。</p>
+      <p class="motto">每 10 粒排一條，先數條再數粒！</p>
+      <div class="actions">
+        <button id="again" class="big" type="button">再玩一次</button>
+        <button id="tohome" class="ghost" type="button">返回主頁</button>
+      </div>
+    </div>
+  </section>
+  <section id="teacher" class="screen" hidden>
+    <div class="topbar"><a class="ghost" href="#home" id="tback">← 返回</a><div class="gtitle">老師專用：全班掌握程度</div></div>
+    <p class="hint">把學生傳來的成績貼在下面，一行一位學生，然後按「整理成績」。</p>
+    <textarea id="paste" rows="6" aria-label="貼上學生成績"></textarea>
+    <div class="actions"><button id="parse" class="big mint" type="button">整理成績</button></div>
+    <div id="tview"></div>
+    <section class="checkbox">
+      <h3>核對工作紙上的過關碼</h3>
+      <div class="checkgrid">
+        <label for="cname">學生名字（要和學生輸入的一樣）</label><input id="cname" type="text" autocomplete="off">
+        <label for="ccode">過關碼（6 位數字）</label><input id="ccode" type="text" inputmode="numeric" maxlength="6">
+      </div>
+      <div class="actions"><button id="check" class="big mint" type="button">核對</button></div>
+      <div id="checkres" class="checkres" role="status"></div>
+    </section>
+  </section>
+</main>
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+var $ = function (s) { return document.querySelector(s); };
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function rnd(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function shuffle(a) {
+  a = a.slice();
+  for (var i = a.length - 1; i > 0; i--) { var j = rnd(0, i), t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+var DIGITS = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+function cn(n) { // 21-50 讀作 二十一 ... 五十
+  var t = Math.floor(n / 10), u = n % 10;
+  return DIGITS[t] + "十" + DIGITS[u];
+}
+var COLORS = ["#ff4f8b", "#14b8a6", "#ffa62b", "#38bdf8", "#7a5cff"];
+
+/* ---------- candy pictures ---------- */
+function candy(color) {
+  var c = el("span", "candy");
+  c.style.setProperty("--k", color || COLORS[0]);
+  return c;
+}
+function bar(color) {
+  var b = el("div", "bar");
+  b.style.setProperty("--k", color);
+  for (var i = 0; i < 10; i++) b.appendChild(candy(color));
+  return b;
+}
+/* t 條 u 粒 picture, with 條 and 粒 kept apart so pupils can count 10s then 1s */
+function pic(t, u, label) {
+  var p = el("div", "pic");
+  if (label) p.appendChild(el("div", "lbl", label));
+  var bars = el("div", "bars");
+  for (var i = 0; i < t; i++) bars.appendChild(bar(COLORS[i % COLORS.length]));
+  var us = el("div", "units");
+  for (var j = 0; j < u; j++) us.appendChild(candy(COLORS[t % COLORS.length]));
+  if (t) p.appendChild(bars);
+  if (u) p.appendChild(us);
+  return p;
+}
+/* 簡報式數粒：每條 10 粒直立疊起，單粒疊成一直行 */
+function rodPic(t, u) {
+  var w = el("div", "rodpic");
+  function col(n, cls) {
+    var r = el("div", "rod" + (cls ? " " + cls : ""));
+    for (var i = 0; i < n; i++) r.appendChild(el("span", "cube"));
+    return r;
+  }
+  for (var i = 0; i < t; i++) w.appendChild(col(10));
+  if (u) w.appendChild(col(u, "units"));
+  return w;
+}
+function makeNum() { return rnd(21, 50); }
+function split(n) { return { t: Math.floor(n / 10), u: n % 10 }; }
+/* wrong-number choices pupils really make: swap 條/粒, forget a 條, off by one 條 */
+function distractors(n) {
+  var s = split(n), set = {}, out = [];
+  [s.u * 10 + s.t, n + 10, n - 10, n + 1, n - 1, s.t * 10, n + 2, n - 2].forEach(function (x) {
+    if (x >= 21 && x <= 50 && x !== n && !set[x]) { set[x] = 1; out.push(x); }
+  });
+  return out;
+}
+
+/* ---------- effects ---------- */
+function burst(node, emoji) {
+  var r = node.getBoundingClientRect();
+  for (var i = 0; i < 8; i++) {
+    var f = el("span", "fly", emoji[i % emoji.length]);
+    f.style.left = (r.left + r.width / 2) + "px";
+    f.style.top = (r.top + r.height / 2) + "px";
+    f.style.setProperty("--dx", rnd(-120, 120) + "px");
+    f.style.setProperty("--r", rnd(-90, 90) + "deg");
+    document.body.appendChild(f);
+    setTimeout(function (x) { return function () { x.remove(); }; }(f), 1000);
+  }
+}
+
+/* ---------- number pad ---------- */
+/* fields: [{label, unit}] ; onSubmit(values[]) */
+function numpad(fields, onSubmit) {
+  var wrap = el("div", "pic");
+  wrap.style.alignItems = "center";
+  var slot = el("div", "slot");
+  var boxes = [], vals = fields.map(function () { return ""; }), cur = 0;
+  if (fields.length > 1) slot.classList.add("multi");
+  fields.forEach(function (f, i) {
+    var g = el("span", "grp");
+    if (f.label) g.appendChild(el("span", null, f.label));
+    var b = el("div", "field");
+    b.addEventListener("click", function () { cur = i; paint(); });
+    boxes.push(b); g.appendChild(b);
+    if (f.unit) g.appendChild(el("span", null, f.unit));
+    slot.appendChild(g);
+  });
+  function paint() {
+    boxes.forEach(function (b, i) { b.textContent = vals[i]; b.classList.toggle("on", i === cur); });
+  }
+  var pad = el("div", "keypad");
+  function key(txt, cls, fn) {
+    var k = el("button", "key " + (cls || ""), txt);
+    k.type = "button"; k.addEventListener("click", fn); pad.appendChild(k);
+  }
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(function (d) {
+    key(String(d), "", function () {
+      if (vals[cur].length < 2) vals[cur] += d;
+      if (vals[cur].length === 2 && cur < fields.length - 1) cur++;
+      paint();
+    });
+  });
+  key("⌫", "del", function () { vals[cur] = vals[cur].slice(0, -1); paint(); });
+  key("0", "", function () { if (vals[cur].length < 2) vals[cur] += "0"; paint(); });
+  key("好了！", "go", function () {
+    if (vals.some(function (v) { return v === ""; })) return;
+    onSubmit(vals.map(Number));
+  });
+  wrap.appendChild(slot); wrap.appendChild(pad);
+  paint();
+  return wrap;
+}
+function lock(root) { // disable every button inside after answering
+  root.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+}
+
+</script>
+<script>
+"use strict";
+/* Each game gets ctx = {n, i, who, stage, prompt(text), msg(text, cls), done(ok, goodText, badText)} */
+var WHO = [["波波", "😋"], ["豆豆", "🤩"]];
+
+function order(ctx, text) {
+  var o = el("div", "order");
+  o.appendChild(el("span", "face", WHO[ctx.i % 2][1]));
+  o.appendChild(el("span", "bubble", WHO[ctx.i % 2][0] + "：" + text));
+  return o;
+}
+/* "先數條：10、20、30，再由 30 接數到 34。" */
+function explain(n) {
+  var s = split(n), c = [];
+  for (var i = 1; i <= s.t; i++) c.push(i * 10);
+  var txt = "先數條：" + c.join("、");
+  return s.u ? txt + "，再由 " + s.t * 10 + " 接數到 " + n + "。" : txt + "，合共 " + n + " 粒。";
+}
+
+/* ---- 遊戲 1：排糖果（活動一）：每 10 粒向上疊成一條直條 ---- */
+function g1(ctx) {
+  var N = ctx.n, s = split(N), color = COLORS[0];
+  ctx.prompt("第 " + (ctx.i + 1) + " 關．顧客要買 " + N + " 粒糖果。每湊夠 10 粒，就排成一條！");
+  ctx.stage.appendChild(order(ctx, "請幫我把 " + N + " 粒糖果排整齊，好嗎？"));
+  var tray = el("div", "tray"), rowsBox = el("div", "rods"), info = el("div", "read");
+  var cols = [], cur = null;
+  function refresh() { info.textContent = "未排的糖果：" + tray.children.length + " 粒　已排：" + cols.filter(function (r) { return r.done; }).length + " 條"; }
+  function newCol() {
+    var w = el("div", "rodwrap"), col = el("div", "slotcol"), lab = el("div", "cnt", " ");
+    w.appendChild(col); w.appendChild(lab); rowsBox.appendChild(w);
+    col.w = w; col.lab = lab; col.done = false; cols.push(col); return col;
+  }
+  cur = newCol();
+  function loose() {
+    var c = el("button", "candy"); c.type = "button"; c.style.setProperty("--k", color);
+    c.setAttribute("aria-label", "糖果");
+    c.addEventListener("click", function () {
+      if (c.parentNode === tray) {
+        if (cur.done) cur = newCol();
+        cur.appendChild(c);
+        if (cur.children.length === 10) {
+          cur.done = true; cur.classList.add("done"); cur.lab.textContent = "10 粒";
+          burst(cur, ["🍬"]);
+          if (tray.children.length > 0) cur = newCol();
+        }
+      } else if (!c.parentNode.done) {
+        tray.appendChild(c);
+      }
+      refresh();
+    });
+    return c;
+  }
+  for (var i = 0; i < N; i++) tray.appendChild(loose());
+  var btn = el("button", "big mint", "排好了！"); btn.type = "button";
+  var area = el("div", "pic");
+  area.style.alignItems = "center";
+  ctx.stage.appendChild(tray); ctx.stage.appendChild(rowsBox); ctx.stage.appendChild(info);
+  area.appendChild(btn); ctx.stage.appendChild(area); refresh();
+  btn.addEventListener("click", function () {
+    var partial = cur.done ? 0 : cur.children.length;
+    if (tray.children.length + partial >= 10) { ctx.msg("還有 10 粒或以上沒有排好，再排多一條！", "bad"); return; }
+    ctx.msg("", "");
+    if (!cur.done && !cur.children.length) cur.w.remove(); // 只移走沒放糖果的空框，其餘位置不變
+    refresh();
+    btn.remove(); tray.style.pointerEvents = "none"; rowsBox.style.pointerEvents = "none";
+    ctx.prompt("先數條，再數粒。寫出數量：");
+    setTimeout(function () { area.scrollIntoView({ block: "end" }); }, 50);
+    area.appendChild(numpad([{ label: "", unit: "條" }, { label: "", unit: "粒" }, { label: "合共", unit: "粒" }], function (v) {
+      var ok = v[0] === s.t && v[1] === s.u && v[2] === N;
+      lock(area);
+      ctx.done(ok, N + " 粒！" + explain(N), "答案是 " + s.t + " 條 " + s.u + " 粒，合共 " + N + " 粒。" + explain(N));
+    }));
+  });
+}
+
+/* ---- 遊戲 2：數糖果寫數字（第三關）---- */
+function g2(ctx) {
+  var N = ctx.n, s = split(N);
+  ctx.prompt("袋子裏有多少粒糖果？先數條，再數粒！");
+  ctx.stage.appendChild(order(ctx, "我的糖果袋有幾多粒呢？"));
+  ctx.stage.appendChild(pic(s.t, s.u));
+  var box = el("div", "pic"); box.style.alignItems = "center";
+  box.appendChild(numpad([{ label: "共", unit: "粒" }], function (v) {
+    lock(box);
+    ctx.done(v[0] === N, N + " 粒，讀作「" + cn(N) + "」！", "正確答案是 " + N + "。" + explain(N));
+  }));
+  ctx.stage.appendChild(box);
+}
+
+/* ---- 遊戲 3：選糖果袋（第一關）---- */
+function bagOptions(n) {
+  var s = split(n), cand = [[s.u, s.t], [s.t + 1, s.u], [s.t - 1, s.u], [s.t, s.u + 2], [s.t, s.u - 2], [s.u, s.t + 1], [s.t + 1, s.u + 2]];
+  var seen = {}, out = [];
+  shuffle(cand).forEach(function (c) {
+    var tot = c[0] * 10 + c[1];
+    if (c[0] >= 1 && c[0] <= 5 && c[1] >= 0 && c[1] <= 9 && tot !== n && tot >= 11 && tot <= 59 && !seen[tot] && out.length < 2) { seen[tot] = 1; out.push({ t: c[0], u: c[1], ok: false }); }
+  });
+  out.push({ t: s.t, u: s.u, ok: true });
+  return shuffle(out);
+}
+function g3(ctx) {
+  var N = ctx.n;
+  ctx.prompt("數字是 " + N + "。哪一個糖果袋才是正確的？");
+  ctx.stage.appendChild(order(ctx, "我要買 " + N + " 粒糖果！"));
+  var big = el("div", "bigno pill", String(N)); ctx.stage.appendChild(big);
+  var grid = el("div", "choices bags");
+  bagOptions(N).forEach(function (o, i) {
+    var b = el("button", "choice bagwrap rodbag"); b.type = "button";
+    b.appendChild(el("div", "stripe"));
+    b.appendChild(el("div", "tag", "ABC"[i] + " 袋"));
+    b.appendChild(rodPic(o.t, o.u));
+    b.addEventListener("click", function () {
+      lock(grid); b.classList.add(o.ok ? "right" : "wrong");
+      if (!o.ok) grid.querySelectorAll("button").forEach(function (x) { if (x.dataset.ok) x.classList.add("right"); });
+      ctx.done(o.ok, "對了！" + explain(N), "再看清楚：" + N + " 是 " + split(N).t + " 條 " + split(N).u + " 粒。" + explain(N));
+    });
+    if (o.ok) b.dataset.ok = "1";
+    grid.appendChild(b);
+  });
+  ctx.stage.appendChild(grid);
+}
+
+/* ---- 遊戲 4：糖果檢查員（第二關）---- */
+function g4(ctx) {
+  var N = ctx.n, s = split(N), wrong = Math.random() < 0.6;
+  var label = wrong ? shuffle(distractors(N))[0] : N;
+  ctx.prompt("糖果袋上寫着 " + label + "。袋中的糖果數量對不對？");
+  ctx.stage.appendChild(order(ctx, "請幫我檢查，袋上的數字有沒有寫錯？"));
+  ctx.stage.appendChild(pic(s.t, s.u));
+  var tag = el("div", "bigno", String(label)); ctx.stage.appendChild(tag);
+  var grid = el("div", "choices"), box = el("div", "pic");
+  box.style.alignItems = "center";
+  function mk(txt, said) {
+    var b = el("button", "choice", txt); b.type = "button";
+    b.addEventListener("click", function () {
+      lock(grid);
+      if (!wrong) { b.classList.add(said ? "right" : "wrong"); ctx.done(said, "數字正確！" + explain(N), "其實袋上的數字是對的。" + explain(N)); return; }
+      if (said) { b.classList.add("wrong"); ctx.done(false, "", "數字錯了！正確是 " + N + "。" + explain(N)); return; }
+      b.classList.add("right"); ctx.prompt("數字錯了！寫出正確的數字：");
+      box.appendChild(numpad([{ label: "共", unit: "粒" }], function (v) {
+        lock(box);
+        ctx.done(v[0] === N, "檢查員合格！" + N + " 粒，讀作「" + cn(N) + "」！", "正確答案是 " + N + "。" + explain(N));
+      }));
+    });
+    grid.appendChild(b);
+  }
+  mk("✔ 對", true); mk("✘ 錯", false);
+  ctx.stage.appendChild(grid); ctx.stage.appendChild(box);
+}
+
+/* ---- 遊戲 5：怪獸讀數 ---- */
+function speak(t) {
+  try {
+    var u = new SpeechSynthesisUtterance(t); u.lang = "zh-HK"; u.rate = 0.8;
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  } catch (e) { /* 沒有語音時略過 */ }
+}
+function g5(ctx) {
+  var N = ctx.n;
+  ctx.prompt("怪獸看見這個數字，應該怎樣讀？");
+  ctx.stage.appendChild(order(ctx, "我拿了這麼多糖果，怎樣讀才對呢？"));
+  ctx.stage.appendChild(el("div", "bigno", String(N)));
+  var sp = el("button", "ghost", "🔊 聽一聽"); sp.type = "button";
+  sp.addEventListener("click", function () { speak(cn(N)); });
+  ctx.stage.appendChild(sp);
+  var seen = {}, opts = [cn(N)]; seen[cn(N)] = 1;
+  shuffle(distractors(N)).forEach(function (d) { var r = cn(d); if (!seen[r] && opts.length < 3) { seen[r] = 1; opts.push(r); } });
+  var grid = el("div", "choices");
+  shuffle(opts).forEach(function (r) {
+    var b = el("button", "choice", r); b.type = "button";
+    b.addEventListener("click", function () {
+      lock(grid); var ok = r === cn(N); b.classList.add(ok ? "right" : "wrong");
+      if (!ok) grid.querySelectorAll("button").forEach(function (x) { if (x.textContent === cn(N)) x.classList.add("right"); });
+      ctx.done(ok, N + " 讀作「" + cn(N) + "」！", N + " 讀作「" + cn(N) + "」。" + explain(N));
+    });
+    grid.appendChild(b);
+  });
+  ctx.stage.appendChild(grid);
+}
+
+/* ---- 遊戲 6：糖果數字大挑戰（三關，對應課堂第一至三關）---- */
+var CH = [g3, g2, g4];
+var CHN = ["選出糖果袋", "數糖果寫數字", "檢查數字"];
+function g6(ctx) {
+  var k = ctx.i % 3;
+  var p = ctx.prompt;
+  ctx.prompt = function (t) { p("第 " + (k + 1) + " 關．" + CHN[k] + "｜" + t); };
+  CH[k](ctx);
+}
+
+var GAMES = [
+  { id: "g1", name: "排糖果", icon: "🍬", color: "#ff4f8b", desc: "每 10 粒排一條，由少到多逐關升級", rounds: 5, build: g1,
+    pick: function () { return [[21, 24], [25, 29], [30, 35], [36, 44], [45, 50]].map(function (b) { return rnd(b[0], b[1]); }); } },
+  { id: "g2", name: "糖果袋有幾多粒", icon: "🛍️", color: "#14b8a6", desc: "看圖數一數，寫出數字", rounds: 6, build: g2 },
+  { id: "g3", name: "找出正確的糖果袋", icon: "🔎", color: "#ffa62b", desc: "看數字，選出對的糖果袋", rounds: 6, build: g3 },
+  { id: "g4", name: "糖果檢查員", icon: "🕵️", color: "#38bdf8", desc: "袋上的數字有沒有寫錯？改正它", rounds: 6, build: g4 },
+  { id: "g5", name: "怪獸讀數", icon: "🗣️", color: "#7a5cff", desc: "選出正確的讀法", rounds: 6, build: g5 },
+  { id: "g6", name: "糖果數字大挑戰", icon: "🏆", color: "#d62a65", desc: "三關連闖，挑戰滿分", rounds: 6, build: g6 }
+];
+
+</script>
+<script>
+"use strict";
+/* app shell: menu, rounds, scoring, stars */
+var STARS = {}, RES = {}, run = null;
+var PRAISE = ["好棒！", "全對！", "糖果大師！", "正確！", "太厲害了！"];
+
+function show(id) {
+  ["home", "play", "end", "teacher"].forEach(function (s) { $("#" + s).hidden = s !== id; });
+  window.scrollTo(0, 0);
+}
+function starsHtml(n, max) {
+  var t = "";
+  for (var i = 0; i < max; i++) t += i < n ? "★" : '<span class="off">★</span>';
+  return t;
+}
+function renderMenu() {
+  var m = $("#menu"); m.innerHTML = "";
+  var total = 0;
+  GAMES.forEach(function (g) {
+    var b = el("button", "gcard"); b.type = "button";
+    var ic = el("div", "gicon", g.icon); ic.style.background = g.color;
+    var mid = el("div"); mid.appendChild(el("div", "gname", g.name)); mid.appendChild(el("div", "gdesc", g.desc));
+    var st = el("div", "gstars"); st.innerHTML = starsHtml(STARS[g.id] || 0, 3);
+    total += STARS[g.id] || 0;
+    b.appendChild(ic); b.appendChild(mid); b.appendChild(st);
+    b.addEventListener("click", function () { start(g); });
+    m.appendChild(b);
+  });
+  if (window.updateReport) updateReport();
+  $("#totalstars").textContent = "糖果星星：" + total + " / " + GAMES.length * 3;
+}
+function pickNumbers(k) {
+  var all = shuffle(Array.apply(null, Array(30)).map(function (_, i) { return 21 + i; }));
+  var tens = all.filter(function (x) { return x % 10 === 0; })[0];
+  var rest = all.filter(function (x) { return x % 10 !== 0; }).slice(0, k - 1);
+  var out = rest.slice(); out.splice(rnd(0, out.length), 0, tens);
+  return out;
+}
+function start(g) {
+  if (window.nameBox && !nameBox.value.trim()) {
+    $("#nameWarn").textContent = "請先寫好名字，再玩遊戲。"; nameBox.focus(); window.scrollTo(0, 0); return;
+  }
+  $("#nameWarn").textContent = "";
+  run = { g: g, i: 0, score: 0, combo: 0, nums: g.pick ? g.pick() : pickNumbers(g.rounds), wrong: [], res: [], answered: false };
+  $("#gtitle").textContent = g.icon + " " + g.name;
+  show("play"); question();
+}
+function paintDots() {
+  var d = $("#dots"); d.innerHTML = "";
+  for (var i = 0; i < run.g.rounds; i++) {
+    var x = el("span", "dot" + (i === run.i ? " now" : "") + (run.res[i] === true ? " ok" : run.res[i] === false ? " no" : ""));
+    d.appendChild(x);
+  }
+}
+function question() {
+  run.answered = false;
+  var st = $("#stage"); st.innerHTML = "";
+  $("#feedback").textContent = ""; $("#feedback").className = "feedback";
+  $("#next").hidden = true;
+  paintDots();
+  var ctx = {
+    n: run.nums[run.i], i: run.i, stage: st,
+    prompt: function (t) { $("#prompt").textContent = t; },
+    msg: function (t, cls) { var f = $("#feedback"); f.textContent = t; f.className = "feedback " + (cls || ""); },
+    done: function (ok, good, bad) { finish(ok, good, bad); }
+  };
+  run.g.build(ctx);
+}
+function finish(ok, good, bad) {
+  if (run.answered) return;
+  run.answered = true; run.res[run.i] = ok;
+  var f = $("#feedback"); f.innerHTML = "";
+  if (ok) {
+    run.score++; run.combo++;
+    f.className = "feedback good";
+    f.appendChild(el("span", null, PRAISE[rnd(0, PRAISE.length - 1)] + " " + good));
+    if (run.combo >= 2) f.appendChild(el("span", "combo", "🔥 連續答對 " + run.combo + " 題"));
+    burst($("#stage"), ["🍬", "⭐", "🍭"]);
+  } else {
+    run.combo = 0; run.wrong.push(run.nums[run.i]); f.className = "feedback bad";
+    f.textContent = bad;
+  }
+  paintDots();
+  var nx = $("#next"); nx.hidden = false;
+  nx.textContent = run.i === run.g.rounds - 1 ? "看結果 →" : "下一題 →";
+  nx.focus();
+}
+function end() {
+  var g = run.g, r = run.score / g.rounds;
+  var stars = r === 1 ? 3 : r >= 0.67 ? 2 : 1;
+  STARS[g.id] = Math.max(STARS[g.id] || 0, stars);
+  if (!RES[g.id] || run.score >= RES[g.id].score) RES[g.id] = { score: run.score, rounds: g.rounds, wrong: run.wrong.slice() };
+  $("#endstars").innerHTML = starsHtml(stars, 3);
+  $("#endtitle").textContent = "答對 " + run.score + " / " + g.rounds + " 題";
+  $("#endmsg").textContent = stars === 3 ? "全部答對，你是糖果店小幫手！" : stars === 2 ? "很不錯！再玩一次，挑戰三顆星。" : "多練習幾次，你會越數越快。記住口訣！";
+  show("end");
+  if (window.updateReport) updateReport();
+}
+$("#next").addEventListener("click", function () {
+  if (run.i === run.g.rounds - 1) end(); else { run.i++; question(); }
+});
+$("#back").addEventListener("click", function () { renderMenu(); show("home"); });
+$("#tohome").addEventListener("click", function () { renderMenu(); show("home"); });
+$("#again").addEventListener("click", function () { start(run.g); });
+renderMenu();
+
+</script>
+<script>
+"use strict";
+/* 學生成績文字 + 老師專用整理頁（不需登入，成績靠學生複製傳給老師） */
+var HEAD = "怪獸糖果店成績";
+var nameBox = $("#pname");
+try { var saved = localStorage.getItem("candy-name"); if (saved) nameBox.value = saved; } catch (e) { /* 略過 */ }
+
+function reportText() {
+  var parts = [HEAD, (nameBox.value.trim() || "（未填名字）")];
+  var played = false;
+  GAMES.forEach(function (g) {
+    var r = RES[g.id]; if (!r) return;
+    played = true;
+    var w = r.wrong.length ? "（錯：" + r.wrong.join("、") + "）" : "";
+    parts.push(g.name + " " + r.score + "/" + r.rounds + w);
+  });
+  return played ? parts.join("｜") : "";
+}
+function updateReport() { paintHome(); }
+nameBox.addEventListener("input", function () {
+  try { localStorage.setItem("candy-name", nameBox.value); } catch (e) { /* 略過 */ }
+  updateReport();
+});
+
+/* ---------- 老師頁 ---------- */
+function parseLines(text) {
+  var students = {}, order = [];
+  text.split(/\n+/).forEach(function (line) {
+    var p = line.split("｜").map(function (x) { return x.trim(); });
+    var h = p.indexOf(HEAD); if (h < 0 || !p[h + 1]) return;
+    var name = p[h + 1];
+    if (!students[name]) { students[name] = {}; order.push(name); }
+    p.slice(h + 2).forEach(function (seg) {
+      var m = seg.match(/^(.+?)\s+(\d+)\/(\d+)(?:（錯：(.*?)）)?$/);
+      if (!m) return;
+      var s = +m[2], t = +m[3], prev = students[name][m[1]];
+      if (!prev || s >= prev.s) students[name][m[1]] = { s: s, t: t, wrong: m[4] ? m[4].split("、") : [] };
+    });
+  });
+  return { students: students, order: order };
+}
+function cell(tr, txt, cls) { var td = el("td", cls, txt); tr.appendChild(td); return td; }
+function renderTeacher() {
+  var out = $("#tview"); out.innerHTML = "";
+  var d = parseLines($("#paste").value);
+  if (!d.order.length) { out.appendChild(el("p", "hint", "找不到成績。請確認貼上的是學生複製的整段文字。")); return; }
+  var wrap = el("div", "tablewrap"), tb = el("table", "ttable");
+  var hr = el("tr"); hr.appendChild(el("th", null, "學生"));
+  GAMES.forEach(function (g) { hr.appendChild(el("th", null, g.name)); });
+  hr.appendChild(el("th", null, "需跟進"));
+  var thead = el("thead"); thead.appendChild(hr); tb.appendChild(thead);
+  var body = el("tbody"), sum = {}, cnt = {}, wrongCount = {};
+  d.order.forEach(function (n) {
+    var tr = el("tr"), weak = [];
+    cell(tr, n, "nm");
+    GAMES.forEach(function (g) {
+      var r = d.students[n][g.name];
+      if (!r) { cell(tr, "—", "none"); return; }
+      var pct = r.s / r.t;
+      cell(tr, r.s + "/" + r.t, pct === 1 ? "good" : pct >= 0.67 ? "mid" : "low");
+      sum[g.name] = (sum[g.name] || 0) + pct; cnt[g.name] = (cnt[g.name] || 0) + 1;
+      if (pct < 0.67) weak.push(g.name);
+      r.wrong.forEach(function (w) { var k = g.name; wrongCount[k] = wrongCount[k] || {}; wrongCount[k][w] = (wrongCount[k][w] || 0) + 1; });
+    });
+    cell(tr, weak.length ? weak.join("、") : "", weak.length ? "low" : "");
+    body.appendChild(tr);
+  });
+  var ar = el("tr", "avg"); cell(ar, "全班平均", "nm");
+  GAMES.forEach(function (g) { cell(ar, cnt[g.name] ? Math.round(sum[g.name] / cnt[g.name] * 100) + "%" : "—"); });
+  cell(ar, ""); body.appendChild(ar);
+  tb.appendChild(body); wrap.appendChild(tb); out.appendChild(wrap);
+  out.appendChild(el("p", "hint", "綠色＝全對；黃色＝答對三分之二或以上；粉紅＝低於三分之二，建議跟進。"));
+  var any = false, box = el("div", "wrongbox"); box.appendChild(el("h3", null, "全班常錯的數字"));
+  GAMES.forEach(function (g) {
+    var w = wrongCount[g.name]; if (!w) return;
+    var top = Object.keys(w).sort(function (a, b) { return w[b] - w[a]; }).slice(0, 4);
+    box.appendChild(el("p", null, g.name + "：" + top.map(function (k) { return k + "（" + w[k] + " 次）"; }).join("、")));
+    any = true;
+  });
+  if (any) out.appendChild(box);
+}
+$("#parse").addEventListener("click", renderTeacher);
+function route() { if (location.hash === "#teacher") show("teacher"); else if (!$("#teacher").hidden) { renderMenu(); show("home"); } }
+window.addEventListener("hashchange", route);
+route(); updateReport();
+
+/* ---------- 成績卡與過關碼：6 位數字，前 4 位藏着星星，後 2 位是檢查數 ---------- */
+function starsOf() { return GAMES.map(function (g) { return STARS[g.id] || 0; }); }
+function hash(str) {
+  var h = 2166136261;
+  for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15;
+  return h >>> 0;
+}
+function norm(name) { return name.replace(/\s+/g, ""); }
+function pad(n, w) { return String(n).padStart(w, "0"); }
+function codeAll(name, arr) {
+  var k = 0; arr.forEach(function (a, i) { k += a * Math.pow(4, i); });
+  var n = norm(name), v = (k + hash(n + "|off") % 4096) % 4096, chk = hash(n + "|" + k + "|chk") % 100;
+  return pad(v, 4) + pad(chk, 2);
+}
+function decodeAll(name, code) { // 回傳星星陣列，錯誤則回傳 null
+  if (!/^\d{6}$/.test(code)) return null;
+  var n = norm(name), v = +code.slice(0, 4), chk = +code.slice(4);
+  if (v >= 4096) return null;
+  var k = (v - hash(n + "|off") % 4096 + 4096) % 4096;
+  if (hash(n + "|" + k + "|chk") % 100 !== chk) return null;
+  var arr = [], x = k;
+  for (var i = 0; i < GAMES.length; i++) { arr.push(x % 4); x = Math.floor(x / 4); }
+  return arr;
+}
+function paintHome() {
+  var c = $("#homecard"); if (!c) return; c.innerHTML = "";
+  var arr = starsOf(), total = arr.reduce(function (a, b) { return a + b; }, 0), name = nameBox.value.trim();
+  c.appendChild(el("div", "cardrow", name || "（請先在上面寫名字）"));
+  GAMES.forEach(function (g, i) {
+    var r = el("div", "gline"); r.appendChild(el("span", null, g.icon + " " + g.name));
+    var st = el("span", "gs"); st.innerHTML = starsHtml(arr[i], 3); r.appendChild(st); c.appendChild(r);
+  });
+  c.appendChild(el("div", "cardrow", "合共 " + total + " / " + GAMES.length * 3 + " 粒星星"));
+  c.appendChild(el("div", "cardlabel", "過關碼"));
+  c.appendChild(el("div", "code", name && total ? codeAll(name, arr) : "—"));
+}
+$("#check").addEventListener("click", function () {
+  var r = $("#checkres"); r.innerHTML = "";
+  var n = $("#cname").value.trim(), c = $("#ccode").value.trim();
+  if (!n || c.length !== 6) { r.className = "checkres"; r.textContent = "請填好名字和 6 位數字的過關碼。"; return; }
+  var arr = decodeAll(n, c);
+  if (!arr) { r.className = "checkres low"; r.textContent = "✘ 過關碼不符。請檢查名字（寫法要和學生輸入的一樣）和 6 位數字。"; return; }
+  r.className = "checkres good";
+  r.appendChild(el("div", null, "✔ 過關碼正確：" + n));
+  var box = el("div", "hit");
+  GAMES.forEach(function (g, i) { var l = el("div", "gline"); l.appendChild(el("span", null, g.name)); var s = el("span", "gs"); s.innerHTML = starsHtml(arr[i], 3); l.appendChild(s); box.appendChild(l); });
+  r.appendChild(box);
+});
+updateReport();
+
+</script>
+</body>
+</html>
